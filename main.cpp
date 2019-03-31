@@ -1,7 +1,8 @@
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
+#include <iostream>
 
-
+// Initialize/declare global variables
 int WindowX = 1280;
 int WindowY = 720;
 int ballRadius = 25;
@@ -12,12 +13,19 @@ sf::Vector2f ballPos;
 int main()
 {
   // Create window
-  sf::RenderWindow window(sf::VideoMode(WindowX, WindowY), "Pong v0.1");
+  sf::RenderWindow window(sf::VideoMode(WindowX, WindowY), "Pong v0.2");
 
   // Initialize ball
   sf::CircleShape shape(ballRadius);
   shape.setFillColor(sf::Color::White);
-  shape.setPosition(CenterX-ballRadius,CenterY-ballRadius);
+  ballPos.x = CenterX-ballRadius;
+  ballPos.y = CenterY-ballRadius;
+  shape.setPosition(ballPos);
+
+  // Initialize motion vector
+  sf::Vector2f ballMotion;
+  ballMotion.x = -.1;
+  ballMotion.y = 0.f;
 
   // Main game loop
   while (window.isOpen())
@@ -25,9 +33,27 @@ int main()
       // Initialize event
       sf::Event event;
 
-      // Move ball left 1 pixel every frame
-      shape.move(-.1,0.f);
-      
+      // Move ball left, then when it hits the left side, bounce it right, when it hits right bounce left, etc
+      // Update the ball
+      ballPos+=ballMotion;
+      shape.setPosition(ballPos);
+
+      // Invert motion vector when it hits LEFT edge
+      if (ballPos.x <= 0.f)
+	{
+	  ballPos.x = 0;
+	  shape.setPosition(ballPos);
+	  std::cout << "Reversing velocity. Postion is " << ballPos.x << std::endl;
+	  ballMotion.x = -ballMotion.x;
+	}
+      // Invert motion vector when it hits RIGHT edge
+      if (ballPos.x >= 1280.f-ballRadius*2)
+	{
+	  ballPos.x = 1280-ballRadius*2;
+	  shape.setPosition(ballPos);
+	  std::cout << "Reversing velocity. Postion is " << ballPos.x << std::endl;
+	  ballMotion.x = -ballMotion.x;
+	}
       // Check for window closure
       while (window.pollEvent(event))
         {
@@ -35,11 +61,10 @@ int main()
 	    window.close();
         }
 
-      // Frame update, update ball position variable
+      // Frame update
       window.clear();
       window.draw(shape);
       window.display();
-      ballPos = shape.getPosition();
     }
   return 0;
 }
