@@ -13,7 +13,7 @@ sf::Vector2f ballPos;
 int main()
 {
   // Create window
-  sf::RenderWindow window(sf::VideoMode(WindowX, WindowY), "Pong v0.2");
+  sf::RenderWindow window(sf::VideoMode(WindowX, WindowY), "Pong v0.2.1");
 
   // Initialize ball
   sf::CircleShape shape(ballRadius);
@@ -25,7 +25,7 @@ int main()
   // Initialize motion vector
   sf::Vector2f ballMotion;
   ballMotion.x = -.1;
-  ballMotion.y = 0.f;
+  ballMotion.y = .05;
 
   // Main game loop
   while (window.isOpen())
@@ -54,6 +54,25 @@ int main()
 	  std::cout << "Reversing velocity. Postion is " << ballPos.x << std::endl;
 	  ballMotion.x = -ballMotion.x;
 	}
+      // Invert motion vector when it hits BOTTOM
+      if (ballPos.y >= 720-ballRadius*2)
+	{
+	  ballPos.y = 720-ballRadius*2;
+	  shape.setPosition(ballPos);
+	  std::cout << "Reversing velocity. Position is " << ballPos.y << std::endl;
+	  ballMotion.y = -ballMotion.y;
+	}
+      // Invert motion vector when it hits TOP
+      if (ballPos.y <= 0)
+	{
+	  ballPos.y = 0;
+	  shape.setPosition(ballPos);
+	  std::cout << "Reversing velocity Position is " << ballPos.y << std::endl;
+	  ballMotion.y = -ballMotion.y;
+	}
+
+      
+      
       // Check for window closure
       while (window.pollEvent(event))
         {
