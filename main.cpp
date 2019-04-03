@@ -9,11 +9,24 @@ int ballRadius = 25;
 int CenterX = WindowX/2;
 int CenterY = WindowY/2;
 sf::Vector2f ballPos;
+sf::Vector2f ballMotion;
+sf::Vector2f lpaddlePos;
+sf::Vector2f rpaddlePos;
+
+// Function area
+
+void frameUpdate(sf::RenderWindow& window,sf::CircleShape& shape,sf::RectangleShape& lpaddle)
+{
+  window.clear();
+  window.draw(shape);
+  window.draw(lpaddle);
+  window.display();
+}
 
 int main()
 {
   // Create window
-  sf::RenderWindow window(sf::VideoMode(WindowX, WindowY), "Pong v0.2.1");
+  sf::RenderWindow window(sf::VideoMode(WindowX, WindowY), "Pong v0.2.2");
 
   // Initialize ball
   sf::CircleShape shape(ballRadius);
@@ -22,8 +35,14 @@ int main()
   ballPos.y = CenterY-ballRadius;
   shape.setPosition(ballPos);
 
+  // Initialize left paddle
+  sf::RectangleShape lpaddle(sf::Vector2f(10.f,100.f));
+  lpaddle.setFillColor(sf::Color::White);
+  lpaddlePos.x = WindowX/16;
+  lpaddlePos.y = WindowY/2;
+  lpaddle.setPosition(lpaddlePos);
+  
   // Initialize motion vector
-  sf::Vector2f ballMotion;
   ballMotion.x = -.1;
   ballMotion.y = .05;
 
@@ -70,8 +89,6 @@ int main()
 	  std::cout << "Reversing velocity Position is " << ballPos.y << std::endl;
 	  ballMotion.y = -ballMotion.y;
 	}
-
-      
       
       // Check for window closure
       while (window.pollEvent(event))
@@ -81,9 +98,7 @@ int main()
         }
 
       // Frame update
-      window.clear();
-      window.draw(shape);
-      window.display();
+      frameUpdate(window,shape,lpaddle);
     }
   return 0;
 }
