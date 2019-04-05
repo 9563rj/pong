@@ -12,6 +12,10 @@ sf::Vector2f ballPos;
 sf::Vector2f ballMotion;
 sf::Vector2f lpaddlePos;
 sf::Vector2f rpaddlePos;
+sf::Vector2f paddleDown;
+sf::Vector2f paddleUp;
+bool qKeyPressed;
+bool aKeyPressed;
 
 // Function area
 
@@ -26,7 +30,7 @@ void frameUpdate(sf::RenderWindow& window,sf::CircleShape& shape,sf::RectangleSh
 int main()
 {
   // Create window
-  sf::RenderWindow window(sf::VideoMode(WindowX, WindowY), "Pong v0.2.2");
+  sf::RenderWindow window(sf::VideoMode(WindowX, WindowY), "Pong v0.3");
 
   // Initialize ball
   sf::CircleShape shape(ballRadius);
@@ -45,7 +49,13 @@ int main()
   // Initialize motion vector
   ballMotion.x = -.1;
   ballMotion.y = .05;
+  // Initialize paddle movement vectors
+  paddleDown.x = 0;
+  paddleDown.y = 5;
+  paddleUp.x = 0;
+  paddleUp.y = -5;
 
+  
   // Main game loop
   while (window.isOpen())
     {
@@ -90,9 +100,30 @@ int main()
 	  ballMotion.y = -ballMotion.y;
 	}
       
-      // Check for window closure
+      // Event handler loop
       while (window.pollEvent(event))
         {
+	  aKeyPressed = false;
+	  qKeyPressed = false;
+	  // lpaddle movement
+	  if (event.type == sf::Event::KeyPressed)
+	    {
+	      if (event.key.code == sf::Keyboard::Q) {qKeyPressed = true;}
+	      if (event.key.code == sf::Keyboard::A) {aKeyPressed = true;}
+	      if (qKeyPressed == true)
+		{
+		  lpaddle.move(paddleUp);
+		  if (event.type == sf::Event::KeyReleased) {qKeyPressed = false;}
+		}
+	      if (aKeyPressed == true)
+		{
+		  lpaddle.move(paddleDown);
+		  if (event.type == sf::Event::KeyReleased) {aKeyPressed = false;}
+		}
+	    }
+
+	  
+	  // Check for window closure
 	  if (event.type == sf::Event::Closed)
 	    window.close();
         }
