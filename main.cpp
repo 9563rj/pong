@@ -16,6 +16,8 @@ sf::Vector2f paddleDown;
 sf::Vector2f paddleUp;
 bool qKeyPressed;
 bool aKeyPressed;
+bool ballPaddleCollision;
+int lpaddleFront;
 
 // Function area
 
@@ -30,7 +32,7 @@ void frameUpdate(sf::RenderWindow& window,sf::CircleShape& shape,sf::RectangleSh
 int main()
 {
   // Create window
-  sf::RenderWindow window(sf::VideoMode(WindowX, WindowY), "Pong v0.3.1");
+  sf::RenderWindow window(sf::VideoMode(WindowX, WindowY), "Pong v0.3.2");
 
   // Initialize ball
   sf::CircleShape shape(ballRadius);
@@ -40,21 +42,25 @@ int main()
   shape.setPosition(ballPos);
 
   // Initialize left paddle
-  sf::RectangleShape lpaddle(sf::Vector2f(10.f,100.f));
+  int paddleWidth = 10.f;
+  int paddleHeight = 100.f;
+  sf::RectangleShape lpaddle(sf::Vector2f(paddleWidth,paddleHeight));
   lpaddle.setFillColor(sf::Color::White);
   lpaddlePos.x = WindowX/16;
   lpaddlePos.y = WindowY/2;
   lpaddle.setPosition(lpaddlePos);
   
   // Initialize motion vector
-  ballMotion.x = -.1;
+  ballMotion.x = -.125;
   ballMotion.y = .05;
   // Initialize paddle movement vectors
   paddleDown.x = 0;
   paddleDown.y = .1625;
   paddleUp.x = 0;
   paddleUp.y = -.1625;
-
+  // Initialize other variables
+  ballPaddleCollision = false;
+  lpaddleFront = lpaddlePos.x+paddleWidth;
   
   // Main game loop
   while (window.isOpen())
@@ -62,7 +68,7 @@ int main()
       // Initialize event
       sf::Event event;
 
-      // Move ball left, then when it hits the left side, bounce it right, when it hits right bounce left, etc
+      // Ball motion section
       // Update the ball
       ballPos+=ballMotion;
       shape.setPosition(ballPos);
@@ -86,7 +92,6 @@ int main()
 	{
 	  ballPos.y = 720-ballRadius*2;
 	  shape.setPosition(ballPos);
-	  std::cout << "Reversing velocity. Position is " << ballPos.y << std::endl;
 	  ballMotion.y = -ballMotion.y;
 	}
       // Invert motion vector when it hits TOP
@@ -94,9 +99,23 @@ int main()
 	{
 	  ballPos.y = 0;
 	  shape.setPosition(ballPos);
-	  std::cout << "Reversing velocity Position is " << ballPos.y << std::endl;
 	  ballMotion.y = -ballMotion.y;
 	}
+      // Paddle collision
+      
+      sf::Vector2f ballCenter;
+      ballCenter.x = ballPos.x+ballRadius;
+      ballCenter.y = ballPos.y+ballRadius;
+      int paddleTop = lpaddle.getPosition().y;
+      int paddleBottom = lpaddle.getPosition().y+paddleHeight;
+
+      // Reset ballPaddleCollision
+      ballPaddleCollision = false;
+
+      // Main collision check
+      if (ballCenter.y >= paddleTop && ballCenter.y <= paddleBottom && ballCenter.x-ballRadius <= lpaddleFront) {ballPaddleCollision = true;}
+      // Invert motion vectors for reflection
+      if (ballPaddleCollision == true) {ballMotion.x = -ballMotion.x;}
       
       // Event handler
       window.pollEvent(event);
