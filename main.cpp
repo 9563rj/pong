@@ -30,7 +30,7 @@ void frameUpdate(sf::RenderWindow& window,sf::CircleShape& shape,sf::RectangleSh
 int main()
 {
   // Create window
-  sf::RenderWindow window(sf::VideoMode(WindowX, WindowY), "Pong v0.3");
+  sf::RenderWindow window(sf::VideoMode(WindowX, WindowY), "Pong v0.3.1");
 
   // Initialize ball
   sf::CircleShape shape(ballRadius);
@@ -51,9 +51,9 @@ int main()
   ballMotion.y = .05;
   // Initialize paddle movement vectors
   paddleDown.x = 0;
-  paddleDown.y = 5;
+  paddleDown.y = .1625;
   paddleUp.x = 0;
-  paddleUp.y = -5;
+  paddleUp.y = -.1625;
 
   
   // Main game loop
@@ -72,7 +72,6 @@ int main()
 	{
 	  ballPos.x = 0;
 	  shape.setPosition(ballPos);
-	  std::cout << "Reversing velocity. Postion is " << ballPos.x << std::endl;
 	  ballMotion.x = -ballMotion.x;
 	}
       // Invert motion vector when it hits RIGHT edge
@@ -80,9 +79,8 @@ int main()
 	{
 	  ballPos.x = 1280-ballRadius*2;
 	  shape.setPosition(ballPos);
-	  std::cout << "Reversing velocity. Postion is " << ballPos.x << std::endl;
 	  ballMotion.x = -ballMotion.x;
-	}
+ 	}
       // Invert motion vector when it hits BOTTOM
       if (ballPos.y >= 720-ballRadius*2)
 	{
@@ -100,34 +98,27 @@ int main()
 	  ballMotion.y = -ballMotion.y;
 	}
       
-      // Event handler loop
-      while (window.pollEvent(event))
-        {
-	  aKeyPressed = false;
-	  qKeyPressed = false;
-	  // lpaddle movement
-	  if (event.type == sf::Event::KeyPressed)
+      // Event handler
+      window.pollEvent(event);
+      // lpaddle movement
+      if (event.type == sf::Event::KeyPressed)
 	    {
 	      if (event.key.code == sf::Keyboard::Q) {qKeyPressed = true;}
 	      if (event.key.code == sf::Keyboard::A) {aKeyPressed = true;}
-	      if (qKeyPressed == true)
-		{
-		  lpaddle.move(paddleUp);
-		  if (event.type == sf::Event::KeyReleased) {qKeyPressed = false;}
-		}
-	      if (aKeyPressed == true)
-		{
-		  lpaddle.move(paddleDown);
-		  if (event.type == sf::Event::KeyReleased) {aKeyPressed = false;}
-		}
 	    }
-
-	  
-	  // Check for window closure
-	  if (event.type == sf::Event::Closed)
-	    window.close();
-        }
-
+      if (event.type == sf::Event::KeyReleased) {aKeyPressed = false; qKeyPressed = false;}
+      if (qKeyPressed == true)
+	{
+	  lpaddle.move(paddleUp);	   
+	}
+      if (aKeyPressed == true)
+	{
+	  lpaddle.move(paddleDown);
+	}
+            
+      // Check for window closure
+      if (event.type == sf::Event::Closed) {window.close();}
+      
       // Frame update
       frameUpdate(window,shape,lpaddle);
     }
