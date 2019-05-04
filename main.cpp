@@ -32,7 +32,7 @@ void frameUpdate(sf::RenderWindow& window,sf::CircleShape& shape,sf::RectangleSh
 int main()
 {
   // Create window
-  sf::RenderWindow window(sf::VideoMode(WindowX, WindowY), "Pong v0.3.2");
+  sf::RenderWindow window(sf::VideoMode(WindowX, WindowY), "Pong v0.3.3");
 
   // Initialize ball
   sf::CircleShape shape(ballRadius);
@@ -108,6 +108,9 @@ int main()
       ballCenter.y = ballPos.y+ballRadius;
       int paddleTop = lpaddle.getPosition().y;
       int paddleBottom = lpaddle.getPosition().y+paddleHeight;
+      // Paddle collision with top of window
+      if (paddleTop <= 0) {lpaddle.setPosition(lpaddle.getPosition().x,1);}
+      if (paddleBottom >= 720) {lpaddle.setPosition(lpaddle.getPosition().x,720-paddleHeight);}
 
       // Reset ballPaddleCollision
       ballPaddleCollision = false;
