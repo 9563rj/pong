@@ -1,6 +1,7 @@
 #include <SFML/Audio.hpp>
 #include <SFML/Graphics.hpp>
 #include <iostream>
+#include <sstream>
 
 // Initialize/declare global variables
 int WindowX = 1280;
@@ -20,22 +21,26 @@ bool upKeyPressed;
 bool downKeyPressed;
 bool ballPaddleCollision;
 int lpaddleFront;
+int leftScoreCount;
+int rightScoreCount;
 
 // Function area
 
-void frameUpdate(sf::RenderWindow& window,sf::CircleShape& shape,sf::RectangleShape& lpaddle,sf::RectangleShape& rpaddle)
+void frameUpdate(sf::RenderWindow& window,sf::CircleShape& shape,sf::RectangleShape& lpaddle,sf::RectangleShape& rpaddle,sf::Text& leftScore,sf::Text& rightScore)
 {
   window.clear();
   window.draw(shape);
   window.draw(lpaddle);
   window.draw(rpaddle);
+  window.draw(rightScore);
+  window.draw(leftScore);
   window.display();
 }
 
 int main()
 {
   // Create window
-  sf::RenderWindow window(sf::VideoMode(WindowX, WindowY), "Pong v0.4.1");
+  sf::RenderWindow window(sf::VideoMode(WindowX, WindowY), "Pong v0.5");
 
   // Initialize ball
   sf::CircleShape shape(ballRadius);
@@ -58,6 +63,22 @@ int main()
   rpaddlePos.x = WindowX/16*15;
   rpaddlePos.y = WindowY/2;
   rpaddle.setPosition(rpaddlePos);
+
+  // Initialize scores
+  sf::Font font;
+  font.loadFromFile("bit5x3.ttf");
+  sf::Text leftScore;
+  sf::Text rightScore;
+  leftScore.setFont(font);
+  rightScore.setFont(font);
+  leftScore.setString("0");
+  rightScore.setString("0");
+  leftScore.setCharacterSize(180);
+  rightScore.setCharacterSize(180);
+  leftScore.setFillColor(sf::Color::White);
+  rightScore.setFillColor(sf::Color::White);
+  leftScore.setPosition(WindowX/4,10);
+  rightScore.setPosition(WindowX/4*3,10);
   
   // Initialize motion vector
   ballMotion.x = -.125;
@@ -82,19 +103,27 @@ int main()
       ballPos+=ballMotion;
       shape.setPosition(ballPos);
 
-      // Invert motion vector when it hits LEFT edge
+      // Score up and reset when it hits LEFT edge
       if (ballPos.x <= 0.f)
 	{
-	  ballPos.x = 0;
+	  ballPos.x = WindowX/2;
+	  ballPos.y = WindowY/2;
 	  shape.setPosition(ballPos);
-	  ballMotion.x = -ballMotion.x;
+	  rightScoreCount++;
+	  std::ostringstream stream;	  
+	  stream << rightScoreCount;
+	  rightScore.setString(stream.str());
 	}
       // Invert motion vector when it hits RIGHT edge
       if (ballPos.x >= 1280.f-ballRadius*2)
 	{
-	  ballPos.x = 1280-ballRadius*2;
+	  ballPos.x = WindowX/2;
+	  ballPos.y = WindowY/2;
 	  shape.setPosition(ballPos);
-	  ballMotion.x = -ballMotion.x;
+	  leftScoreCount++;
+	  std::ostringstream stream;
+	  stream << leftScoreCount;
+	  leftScore.setString(stream.str());
  	}
       // Invert motion vector when it hits BOTTOM
       if (ballPos.y >= 720-ballRadius*2)
@@ -170,11 +199,12 @@ int main()
 	{
 	  rpaddle.move(paddleDown);
 	}
+      
       // Check for window closure
       if (event.type == sf::Event::Closed) {window.close();}
       
       // Frame update
-      frameUpdate(window,shape,lpaddle,rpaddle);
+      frameUpdate(window,shape,lpaddle,rpaddle,leftScore,rightScore);
     }
   return 0;
 }
