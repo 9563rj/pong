@@ -16,23 +16,26 @@ sf::Vector2f paddleDown;
 sf::Vector2f paddleUp;
 bool qKeyPressed;
 bool aKeyPressed;
+bool upKeyPressed;
+bool downKeyPressed;
 bool ballPaddleCollision;
 int lpaddleFront;
 
 // Function area
 
-void frameUpdate(sf::RenderWindow& window,sf::CircleShape& shape,sf::RectangleShape& lpaddle)
+void frameUpdate(sf::RenderWindow& window,sf::CircleShape& shape,sf::RectangleShape& lpaddle,sf::RectangleShape& rpaddle)
 {
   window.clear();
   window.draw(shape);
   window.draw(lpaddle);
+  window.draw(rpaddle);
   window.display();
 }
 
 int main()
 {
   // Create window
-  sf::RenderWindow window(sf::VideoMode(WindowX, WindowY), "Pong v0.3.3");
+  sf::RenderWindow window(sf::VideoMode(WindowX, WindowY), "Pong v0.4");
 
   // Initialize ball
   sf::CircleShape shape(ballRadius);
@@ -49,6 +52,12 @@ int main()
   lpaddlePos.x = WindowX/16;
   lpaddlePos.y = WindowY/2;
   lpaddle.setPosition(lpaddlePos);
+  // Initialize right paddle
+  sf::RectangleShape rpaddle(sf::Vector2f(paddleWidth,paddleHeight));
+  rpaddle.setFillColor(sf::Color::White);
+  rpaddlePos.x = WindowX/16*15;
+  rpaddlePos.y = WindowY/2;
+  rpaddle.setPosition(rpaddlePos);
   
   // Initialize motion vector
   ballMotion.x = -.125;
@@ -106,29 +115,37 @@ int main()
       sf::Vector2f ballCenter;
       ballCenter.x = ballPos.x+ballRadius;
       ballCenter.y = ballPos.y+ballRadius;
-      int paddleTop = lpaddle.getPosition().y;
-      int paddleBottom = lpaddle.getPosition().y+paddleHeight;
+      int lpaddleTop = lpaddle.getPosition().y;
+      int lpaddleBottom = lpaddle.getPosition().y+paddleHeight;
       // Paddle collision with top of window
-      if (paddleTop <= 0) {lpaddle.setPosition(lpaddle.getPosition().x,1);}
-      if (paddleBottom >= 720) {lpaddle.setPosition(lpaddle.getPosition().x,720-paddleHeight);}
+      if (lpaddleTop <= 0) {lpaddle.setPosition(lpaddle.getPosition().x,1);}
+      if (lpaddleBottom >= 720) {lpaddle.setPosition(lpaddle.getPosition().x,720-paddleHeight);}
 
       // Reset ballPaddleCollision
       ballPaddleCollision = false;
 
       // Main collision check
-      if (ballCenter.y >= paddleTop && ballCenter.y <= paddleBottom && ballCenter.x-ballRadius <= lpaddleFront) {ballPaddleCollision = true;}
+      if (ballCenter.y >= lpaddleTop && ballCenter.y <= lpaddleBottom && ballCenter.x-ballRadius <= lpaddleFront) {ballPaddleCollision = true;}
       // Invert motion vectors for reflection
       if (ballPaddleCollision == true) {ballMotion.x = -ballMotion.x;}
       
       // Event handler
       window.pollEvent(event);
-      // lpaddle movement
+      // Paddle movement
       if (event.type == sf::Event::KeyPressed)
 	    {
+	      if (event.key.code == sf::Keyboard::Down) {downKeyPressed = true;}
+	      if (event.key.code == sf::Keyboard::Up) {upKeyPressed = true;}
 	      if (event.key.code == sf::Keyboard::Q) {qKeyPressed = true;}
 	      if (event.key.code == sf::Keyboard::A) {aKeyPressed = true;}
 	    }
-      if (event.type == sf::Event::KeyReleased) {aKeyPressed = false; qKeyPressed = false;}
+      if (event.type == sf::Event::KeyReleased)
+	{
+	  if (event.key.code == sf::Keyboard::Up) {upKeyPressed = false;}
+	  if (event.key.code == sf::Keyboard::Down) {downKeyPressed = false;}
+	  if (event.key.code == sf::Keyboard::A) {aKeyPressed = false;}
+	  if (event.key.code == sf::Keyboard::Q) {qKeyPressed = false;}
+	}
       if (qKeyPressed == true)
 	{
 	  lpaddle.move(paddleUp);	   
@@ -137,12 +154,19 @@ int main()
 	{
 	  lpaddle.move(paddleDown);
 	}
-            
+      if (upKeyPressed == true)
+	{
+	  rpaddle.move(paddleUp);
+	}
+      if (downKeyPressed == true)
+	{
+	  rpaddle.move(paddleDown);
+	}
       // Check for window closure
       if (event.type == sf::Event::Closed) {window.close();}
       
       // Frame update
-      frameUpdate(window,shape,lpaddle);
+      frameUpdate(window,shape,lpaddle,rpaddle);
     }
   return 0;
 }
