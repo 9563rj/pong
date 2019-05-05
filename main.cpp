@@ -35,7 +35,7 @@ void frameUpdate(sf::RenderWindow& window,sf::CircleShape& shape,sf::RectangleSh
 int main()
 {
   // Create window
-  sf::RenderWindow window(sf::VideoMode(WindowX, WindowY), "Pong v0.4");
+  sf::RenderWindow window(sf::VideoMode(WindowX, WindowY), "Pong v0.4.1");
 
   // Initialize ball
   sf::CircleShape shape(ballRadius);
@@ -110,6 +110,7 @@ int main()
 	  shape.setPosition(ballPos);
 	  ballMotion.y = -ballMotion.y;
 	}
+      
       // Paddle collision
       
       sf::Vector2f ballCenter;
@@ -117,15 +118,22 @@ int main()
       ballCenter.y = ballPos.y+ballRadius;
       int lpaddleTop = lpaddle.getPosition().y;
       int lpaddleBottom = lpaddle.getPosition().y+paddleHeight;
+      int rpaddleTop = rpaddle.getPosition().y;
+      int rpaddleBottom = rpaddle.getPosition().y+paddleHeight;
       // Paddle collision with top of window
       if (lpaddleTop <= 0) {lpaddle.setPosition(lpaddle.getPosition().x,1);}
-      if (lpaddleBottom >= 720) {lpaddle.setPosition(lpaddle.getPosition().x,720-paddleHeight);}
-
+      if (lpaddleBottom >= WindowY) {lpaddle.setPosition(lpaddle.getPosition().x,WindowY-paddleHeight);}
+      if (rpaddleTop <= 0) {rpaddle.setPosition(rpaddle.getPosition().x,1);}
+      if (rpaddleBottom >= WindowY) {rpaddle.setPosition(rpaddle.getPosition().x,WindowY-paddleHeight);}
+      
       // Reset ballPaddleCollision
       ballPaddleCollision = false;
 
-      // Main collision check
+      // Main collision checks
+      // Left paddle collision check
       if (ballCenter.y >= lpaddleTop && ballCenter.y <= lpaddleBottom && ballCenter.x-ballRadius <= lpaddleFront) {ballPaddleCollision = true;}
+      // Right paddle collision check
+      if (ballCenter.y >= rpaddleTop && ballCenter.y <= rpaddleBottom && ballCenter.x+ballRadius >= rpaddle.getPosition().x) {ballPaddleCollision = true;}
       // Invert motion vectors for reflection
       if (ballPaddleCollision == true) {ballMotion.x = -ballMotion.x;}
       
