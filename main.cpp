@@ -27,6 +27,7 @@ int collisionCheckCounter;
 int lpaddleFront;
 int leftScoreCount;
 int rightScoreCount;
+bool gameRunning;
 
 // Function area
 
@@ -44,7 +45,7 @@ void frameUpdate(sf::RenderWindow& window,sf::CircleShape& shape,sf::RectangleSh
 int main()
 {
   // Create window
-  sf::RenderWindow window(sf::VideoMode(WindowX, WindowY), "Pong v0.6");
+  sf::RenderWindow window(sf::VideoMode(WindowX, WindowY), "Pong v1.0");
 
   // Initialize ball
   sf::CircleShape shape(ballRadius);
@@ -96,9 +97,10 @@ int main()
   ballPaddleCollision = false;
   lpaddleFront = lpaddlePos.x+paddleWidth;
   doCollisionCheck = true;
+  gameRunning = true;
   
   // Main game loop
-  while (window.isOpen())
+  while (window.isOpen() && gameRunning)
     {
       // Initialize event
       sf::Event event;
@@ -303,12 +305,30 @@ int main()
 	{
 	  rpaddle.move(paddleDown);
 	}
+      // "You Win" screen
+      if (leftScoreCount == 5) {gameRunning = false;}
+      if (rightScoreCount == 5) {gameRunning = false;}
       
       // Check for window closure
       if (event.type == sf::Event::Closed) {window.close();}
       
       // Frame update
       frameUpdate(window,shape,lpaddle,rpaddle,leftScore,rightScore);
+    }
+  while (window.isOpen())
+    {
+      window.clear();
+      sf::Text win;
+      win.setFont(font);
+      win.setString("You Win!");
+      win.setCharacterSize(180);
+      win.setFillColor(sf::Color::White);
+      win.setPosition(WindowX/4,WindowY/4);
+      window.draw(win);
+      window.display();
+      sf::Event winEvent;
+      window.pollEvent(winEvent);
+      if (winEvent.type == sf::Event::Closed) {window.close();}
     }
   return 0;
 }
