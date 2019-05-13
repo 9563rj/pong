@@ -222,11 +222,12 @@ int main()
 	  if (ballCenter.x >= rpaddle.getPosition().x+paddleWidth) {goto SKIPCOLLISION;}
 	  // Right paddle collision checks
 	  if (ballCenter.y >= rpaddleTop && ballCenter.y <= rpaddleBottom && ballCenter.x+ballRadius >= rpaddle.getPosition().x) {ballPaddleCollision = true;}
-	  // Right paddle top corner case
+
+	  // Right paddle front top corner case
 	  if (ballCenter.y+ballRadius >= rpaddleTop && ballCenter.y <= rpaddleTop)
 	    {
 	      int dx = ballCenter.x-rpaddle.getPosition().x;
-	      int dy = ballCenter.y-rpaddleBottom;
+	      int dy = ballCenter.y-rpaddleTop;
 	      double dist = sqrt(dx*dx+dy*dy);
 	      if (dist < ballRadius)
 		{
