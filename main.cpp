@@ -2,6 +2,7 @@
 #include <SFML/Graphics.hpp>
 #include <iostream>
 #include <sstream>
+#include <cmath>
 
 // Initialize/declare global variables
 int WindowX = 1280;
@@ -20,6 +21,9 @@ bool aKeyPressed;
 bool upKeyPressed;
 bool downKeyPressed;
 bool ballPaddleCollision;
+bool ballPaddleCornerCollision;
+bool doCollisionCheck;
+int collisionCheckCounter;
 int lpaddleFront;
 int leftScoreCount;
 int rightScoreCount;
@@ -40,7 +44,7 @@ void frameUpdate(sf::RenderWindow& window,sf::CircleShape& shape,sf::RectangleSh
 int main()
 {
   // Create window
-  sf::RenderWindow window(sf::VideoMode(WindowX, WindowY), "Pong v0.5");
+  sf::RenderWindow window(sf::VideoMode(WindowX, WindowY), "Pong v0.6");
 
   // Initialize ball
   sf::CircleShape shape(ballRadius);
@@ -81,7 +85,7 @@ int main()
   rightScore.setPosition(WindowX/4*3,10);
   
   // Initialize motion vector
-  ballMotion.x = -.125;
+  ballMotion.x = -.2;
   ballMotion.y = .05;
   // Initialize paddle movement vectors
   paddleDown.x = 0;
@@ -91,6 +95,7 @@ int main()
   // Initialize other variables
   ballPaddleCollision = false;
   lpaddleFront = lpaddlePos.x+paddleWidth;
+  doCollisionCheck = true;
   
   // Main game loop
   while (window.isOpen())
@@ -157,14 +162,113 @@ int main()
       
       // Reset ballPaddleCollision
       ballPaddleCollision = false;
+      ballPaddleCornerCollision = false;
 
       // Main collision checks
-      // Left paddle collision check
-      if (ballCenter.y >= lpaddleTop && ballCenter.y <= lpaddleBottom && ballCenter.x-ballRadius <= lpaddleFront) {ballPaddleCollision = true;}
-      // Right paddle collision check
-      if (ballCenter.y >= rpaddleTop && ballCenter.y <= rpaddleBottom && ballCenter.x+ballRadius >= rpaddle.getPosition().x) {ballPaddleCollision = true;}
-      // Invert motion vectors for reflection
-      if (ballPaddleCollision == true) {ballMotion.x = -ballMotion.x;}
+      if (doCollisionCheck)
+	{
+	  // Ball escaped left
+	  if (ballCenter.x <= lpaddle.getPosition().x) {goto SKIPCOLLISION;}
+	  
+	  // Left paddle front face collision check
+	  if (ballCenter.y >= lpaddleTop && ballCenter.y <= lpaddleBottom && ballCenter.x-ballRadius <= lpaddleFront) {ballPaddleCollision = true;}
+
+	  // Left paddle front top corner collision check
+	  if (ballCenter.y+ballRadius >= lpaddleTop && ballCenter.y <= lpaddleTop)
+	    {
+	      int dx = ballCenter.x-lpaddleFront;
+	      int dy = ballCenter.y-lpaddleTop;
+	      double dist = sqrt(dx*dx+dy*dy);
+	      if (dist < ballRadius)
+		{
+		  ballPaddleCollision = true;
+		  ballPaddleCornerCollision = true;
+		}
+	    }
+	  
+	  // Left paddle top face collision check
+	  if (ballCenter.y+ballRadius >= lpaddleTop && ballCenter.y <= lpaddleTop)
+	    {
+	      if (ballCenter.x >= lpaddle.getPosition().x && ballCenter.x <= lpaddleFront)
+		{
+		  ballPaddleCornerCollision = true;
+		}
+	    }
+	  
+	  // Left paddle front bottom corner collision check
+	  if (ballCenter.y-ballRadius <= lpaddleBottom && ballCenter.y >= lpaddleBottom)
+	    {
+	      int dx = ballCenter.x-lpaddleFront;
+	      int dy = ballCenter.y-lpaddleBottom;
+	      double dist = sqrt(dx*dx+dy*dy);
+	      if (dist < ballRadius)
+		{
+		  ballPaddleCollision = true;
+		  ballPaddleCornerCollision = true;
+		}
+	    }
+	  
+	  // Left paddle bottom collision check
+	  	  if (ballCenter.y+ballRadius <= lpaddleBottom && ballCenter.y >= lpaddleBottom)
+	    {
+	      if (ballCenter.x >= lpaddle.getPosition().x && ballCenter.x <= lpaddleFront)
+	  	{
+	  	  ballPaddleCollision = true;
+	  	}
+	    }
+	  // Right paddle grabbing issue
+	  if (ballCenter.x >= rpaddle.getPosition().x+paddleWidth) {goto SKIPCOLLISION;}
+	  // Right paddle collision checks
+	  if (ballCenter.y >= rpaddleTop && ballCenter.y <= rpaddleBottom && ballCenter.x+ballRadius >= rpaddle.getPosition().x) {ballPaddleCollision = true;}
+	  // Right paddle top corner case
+	  if (ballCenter.y+ballRadius >= rpaddleTop && ballCenter.y <= rpaddleTop)
+	    {
+	      int dx = ballCenter.x-rpaddle.getPosition().x;
+	      int dy = ballCenter.y-rpaddleBottom;
+	      double dist = sqrt(dx*dx+dy*dy);
+	      if (dist < ballRadius)
+		{
+		  ballPaddleCollision = true;
+		  ballPaddleCornerCollision = true;
+		}
+	    }
+	  // Right paddle top face case
+	  if (ballCenter.y+ballRadius >= rpaddleTop && ballCenter.y <= rpaddleTop)
+	    {
+	      if (ballCenter.x <= rpaddle.getPosition().x+paddleWidth && ballCenter.x >= rpaddle.getPosition().x)
+		{
+		  ballPaddleCornerCollision = true;
+		}
+	    }
+	  // Right paddle bottom corner check
+	  if (ballCenter.y-ballRadius <= rpaddleBottom && ballCenter.y >= rpaddleBottom)
+	    {
+	      int dx = ballCenter.x-rpaddle.getPosition().x;
+	      int dy = ballCenter.y-rpaddleBottom;
+	      double dist = sqrt(dx*dx+dy*dy);
+	      if (dist < ballRadius)
+		{
+		  ballPaddleCollision = true;
+		  ballPaddleCornerCollision = true;
+		}
+	    }
+	  // Invert motion vectors for reflection
+	  if (ballPaddleCollision == true)
+	    {
+	      ballMotion.x = -ballMotion.x;
+	      doCollisionCheck = false;
+	      collisionCheckCounter = 1000;
+	    }
+	  if (ballPaddleCornerCollision == true)
+	    {
+	      ballMotion.y = -ballMotion.y;
+	      doCollisionCheck = false;
+	      collisionCheckCounter = 1000;
+	    }
+	}
+    SKIPCOLLISION:
+      collisionCheckCounter--;
+      if (collisionCheckCounter == 0) {doCollisionCheck = true;}
       
       // Event handler
       window.pollEvent(event);
